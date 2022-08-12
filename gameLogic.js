@@ -1,23 +1,26 @@
 function GameSolver() {
-  this.isPaused = false
-  this.interval = undefined
+  this.isPaused = false;
+  this.interval;
+  this.time = 0;
   // TODO : inputbuffer
 
   this.loop = () => {
-    if(this.isPaused) return
+    if(this.isPaused) return;
     // game logic here
-    console.log("hi")
-    requestAnimationFrame(draw)
-  }
+    this.time++;
+    requestAnimationFrame(this.draw);
+  };
 
   this.draw = () => {
-    ctx.clearRect(0, 0, W, H)
-  }
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.time, 100, 100, 100);
+  };
 
-  this.startInterval = () => {this.interval = setInterval(this.loop, TICKPERSECOND)}
-  this.pauseInterval = () => {this.isPaused = true}
-  this.continueInterval = () => {this.isPaused = false}
-  this.clearInterval = () => {clearInterval(this.interval)}
+  this.startInterval = () => {this.interval = setInterval(this.loop, TICKPERSECOND)};
+  this.pauseInterval = () => {this.isPaused = true};
+  this.continueInterval = () => {this.isPaused = false};
+  this.clearInterval = () => {clearInterval(this.interval)};
 }
 
 // Player:
