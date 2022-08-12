@@ -1,19 +1,19 @@
-function Game() {
-  this.loop = () => {
+const GameSolver = {
+  isPaused : false,
+  interval : undefined,
+
+  loop : () => {
     // game logic here
     console.log()
-    requestAnimationFrame(draw)
-  }
+    requestAnimationFrame(this.draw)
+  },
 
-  this.draw = () => {
+  draw : () => {
     ctx.clearRect(0, 0, W, H)
-  }
+  },
 
-  this.isPaused = false
-  this.interval
-
-  this.startInterval = () => {this.interval = setInterval(this.loop, TICKPERSECOND)}
-  this.pauseInterval = () => {this.isPaused = true}
-  this.continueInterval = () => {this.isPaused = false}
-  this.clearInterval = () => {clearInterval(this.interval)}
+  startInterval : () => {this.interval = setInterval(this.loop, TICKPERSECOND)},
+  pauseInterval : () => {this.isPaused = true},
+  continueInterval : () => {this.isPaused = false},
+  clearInterval : () => {clearInterval(this.interval)},
 }
