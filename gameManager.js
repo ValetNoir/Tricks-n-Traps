@@ -1,2 +1,2 @@
-const game = new GameSolver()
-game.startInterval()
+const game = new GameSolver();
+game.startInterval();
