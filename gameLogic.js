@@ -1,8 +1,3 @@
-var testObject = new GameObject(
-  0, 100, 50, 50,
-  new Sprite()
-);
-
 function GameSolver() {
   this.isPaused = false;
   this.interval;
@@ -18,8 +13,9 @@ function GameSolver() {
 
   this.draw = () => {
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.time, 100, 100, 100);
+    testObject.draw();
+    // ctx.fillStyle = "red";
+    // ctx.fillRect(this.time, 100, 100, 100);
   };
 
   this.start = () => {this.interval = setInterval(this.loop, TICK_FRAMERATE)};
@@ -48,21 +44,21 @@ function GameObject(x, y, w, h, sprite, colliders) {
     let spritesheet = SPRITESHEETS[this.sprite.spritesheetKey];
     ctx.drawImage(
       spritesheet.image,
-      this.sprite.currentFrame * SPRITE_SOURCE_SIZE,
+      this.sprite.currentFrame * spritesheet.u,
       0,
       spritesheet.u,
       spritesheet.image.height,
       this.x,
       this.y,
-      this.w
+      this.w,
+      this.h,
     );
   };
 }
 
-function Sprite(w, spritesheetKey, animations, animationStateMachine) {
+function Sprite(spritesheetKey, animationStateMachine) {
   this.spritesheetKey = spritesheetKey;
   this.currentFrame;
-  this.animations = animations;
   this.animationStateMachine = animationStateMachine;
 
   this.currentAnimationIndex = () => { // define which animation to play right now
@@ -71,15 +67,22 @@ function Sprite(w, spritesheetKey, animations, animationStateMachine) {
 
   this.playAnimation = () => {
     let i = this.currentAnimationIndex();
-    this.animations[i].step();
-    this.currentFrame = this.animations[i].getCurrentFrame();
+    SPRITESHEETS[this.spritesheetKey].animations[i].step();
+    this.currentFrame = SPRITESHEETS[this.spritesheetKey].animations[i].getCurrentFrame();
   };
   
   this.playAnimation();
   this.animationInterval = setInterval(this.playAnimation, ANIMATION_FRAMERATE);
 }
 
-function Animation(frames) {
+function Spritesheet(src, animations, unitWidth) {
+  this.image = new Image();
+  this.image.src = src;
+  this.animations = animations;
+  this.u = unitWidth;
+}
+
+function SpriteAnimation(frames) {
   this.frames = frames;
   this.currentFrameIndex = this.frames[0];
 
@@ -89,6 +92,9 @@ function Animation(frames) {
 
   this.step = () => {
     this.currentFrameIndex++;
+    if(this.currentFrameIndex >= this.frames.length) {
+      this.currentFrameIndex = 0;
+    }
   }
 }
 
@@ -98,6 +104,7 @@ function StateMachine(states) {
   this.findState = () => {
     while(true) {
       let newStateIndex = this.states[this.actualStateIndex].followLinks();
+      newStateIndex = (newStateIndex == null)? this.actualStateIndex : newStateIndex;
       if(this.actualStateIndex == newStateIndex) {
         return this.states[this.actualStateIndex].value;
       } else {
@@ -133,18 +140,6 @@ function Link(condition_functions, destinationIndex) {
   };
 }
 
-const Collider = {
-  checkBoxBoxCollision : (boxA, boxB) => {
-    // return bool Box&Box collision
-  },
-  checkCircleBoxCollision : (circle, box) => {
-    // return bool Circle&Box collision
-  },
-  checkCircleCircleCollision : (circleA, circleB) => {
-    // return bool Circle&Circle collision
-  },
-};
-
 function Box(x, y, w, h) {
   this.x = x;
   this.y = y;
@@ -169,3 +164,48 @@ function Circle(x, y, r) {
 // - functions :
 //   - generate rendermap
 //   - changetileat(x, y)
+
+const Collider = {
+  checkBoxBoxCollision : (boxA, boxB) => {
+    // return bool Box&Box collision
+  },
+  checkCircleBoxCollision : (circle, box) => {
+    // return bool Circle&Box collision
+  },
+  checkCircleCircleCollision : (circleA, circleB) => {
+    // return bool Circle&Circle collision
+  },
+};
+
+const SPRITESHEETS = {
+  goblin : new Spritesheet(
+    "./assets/spritesheets/goblin.png",
+    [
+      new SpriteAnimation([0,1,2,3,4,5,6,7]),
+    ],
+    32
+  ),
+};
+
+var testObject = new GameObject(
+  0, 100, 200, 200,
+  new Sprite(
+    "goblin",
+    new StateMachine(
+      [
+        new State(
+          0,
+          [
+            new Link(
+              [
+                () => {return false},
+              ],
+              0
+            )
+          ]
+        )
+      ]
+    )
+  ),
+  []
+);

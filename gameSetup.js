@@ -6,6 +6,7 @@ const ANIMATION_FRAMERATE = 1000 / 10;
 
 resizeCanvas();
 canvas.style.backgroundColor = "#000000";
+ctx.imageSmoothingEnabled = false;
 document.body.style.overflow = "hidden";
 document.body.style.margin = "0";
 document.body.appendChild(canvas);
@@ -15,18 +16,3 @@ function resizeCanvas() {
   canvas.height = H = window.innerHeight;
 }
 window.addEventListener("resize", resizeCanvas);
-
-function Spritesheet(src, animations, unitWidth) {
-  this.image = new Image();
-  this.image.src = src;
-  this.animations = animations;
-  this.u = unitWidth
-}
-
-const SPRITESHEETS = {
-  goblin : new Spritesheet(
-    "./assets/spritesheets/goblin.png",
-    [],
-    32
-  ),
-};
