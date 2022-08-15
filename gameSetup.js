@@ -14,5 +14,6 @@ document.body.appendChild(canvas);
 function resizeCanvas() {
   canvas.width = W = window.innerWidth;
   canvas.height = H = window.innerHeight;
+  ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener("resize", resizeCanvas);

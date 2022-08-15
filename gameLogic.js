@@ -1,36 +1,111 @@
-function GameSolver() {
+function GameSolver(controls) {
   this.isPaused = false;
   this.interval;
   this.time = 0;
-  // TODO : inputbuffer
+
+  this.speed = 5;
+
+  this.player = new GameObject(
+    0, 0, 200, 200,
+    new Sprite(
+      "goblin",
+      new StateMachine(
+        [
+          new State(
+            0,
+            [
+              new Link(
+                [
+                  () => {return true},
+                ],
+                0
+              )
+            ]
+          )
+        ]
+      )
+    ),
+    []
+  );
+  
+  this.inventory = [];
+  
+  this.inputHandler = {
+    up : new KeyHandler(
+      controls.upKey,
+      () => {},
+      () => { this.player.move(0, -1 * this.speed); },
+      () => {},
+    ),
+    left : new KeyHandler(
+      controls.leftKey,
+      () => {},
+      () => { this.player.move(-1 * this.speed, 0); },
+      () => {},
+    ),
+    down : new KeyHandler(
+      controls.downKey,
+      () => {},
+      () => { this.player.move(0, 1 * this.speed); },
+      () => {},
+    ),
+    right : new KeyHandler(
+      controls.rightKey,
+      () => {},
+      () => { this.player.move(1 * this.speed, 0); },
+      () => {},
+    ),
+    escape : new KeyHandler(
+      "Escape",
+      () => {
+        this.isPaused = !this.isPaused;
+      },
+      () => {},
+      () => {},
+    ),
+  }
+
+  this.changeKeys = (controls) => {
+    this.inputHandler.up.setKey(controls.upKey);
+    this.inputHandler.left.setKey(controls.leftKey);
+    this.inputHandler.down.setKey(controls.downKey);
+    this.inputHandler.right.setKey(controls.rightKey);
+  }
+
+  // this.actualLevel
 
   this.loop = () => {
     if(this.isPaused) return;
     // game logic here
+    // this.player.x += 1;
     this.time++;
     requestAnimationFrame(this.draw);
   };
 
   this.draw = () => {
     ctx.clearRect(0, 0, W, H);
-    testObject.draw();
-    // ctx.fillStyle = "red";
-    // ctx.fillRect(this.time, 100, 100, 100);
+    this.player.draw();
   };
 
   this.start = () => {this.interval = setInterval(this.loop, TICK_FRAMERATE)};
   this.pause = () => {this.isPaused = true};
-  this.continue = () => {this.isPaused = false};
+  this.unpause = () => {this.isPaused = false};
   this.stop = () => {clearInterval(this.interval)};
+}
+
+function Controls(upKey, leftKey, downKey, rightKey) {
+  this.upKey = upKey;
+  this.leftKey = leftKey;
+  this.downKey = downKey;
+  this.rightKey = rightKey;
 }
 
 // function Game(levels) {
 //   this.levels = levels;
 // }
 
-// Player:
-//   - camera
-//   - playerentity
+function Item() {
+}
 
 function GameObject(x, y, w, h, sprite, colliders) {
   this.x = x;
@@ -39,6 +114,12 @@ function GameObject(x, y, w, h, sprite, colliders) {
   this.h = h;
   this.sprite = sprite;
   this.colliders = colliders;
+
+  this.move = (x, y) => {
+    //check collisions with level.entities and level.tilemap
+    this.x += x;
+    this.y += y;
+  }
 
   this.draw = () => {
     let spritesheet = SPRITESHEETS[this.sprite.spritesheetKey];
@@ -166,14 +247,32 @@ function Circle(x, y, r) {
 //   - changetileat(x, y)
 
 const Collider = {
+  // return bool Box&Box collision
   checkBoxBoxCollision : (boxA, boxB) => {
-    // return bool Box&Box collision
+    return (
+      boxA.x + boxA.w > boxB.x &&
+      boxA.x < boxB.x + boxB.w &&
+      boxA.y + boxA.h > boxB.y &&
+      boxA.y < boxB.y + boxB.h
+    );
   },
+
+  // return bool Circle&Box collision
   checkCircleBoxCollision : (circle, box) => {
-    // return bool Circle&Box collision
+    let testX = circle.x;
+    let testY = circle.y;
+    // which edge is closest?
+    if (circle.x < box.x)               testX = box.x;           // test left edge
+    else if (circle.x > box.x + box.w)  testX = box.x + box.w;   // right edge
+    if (circle.y < box.y)               testY = box.y;           // top edge
+    else if (circle.y > box.y + box.h)  testY = box.y + box.h;   // bottom edge
+    // distance to closest edge < radius => collision
+    return Math.hypot(circle.x - testX, circle.y - testY) < circle.r;
   },
+
+  // return bool Circle&Circle collision
   checkCircleCircleCollision : (circleA, circleB) => {
-    // return bool Circle&Circle collision
+    return Math.hypot(circleA.x - circleB.x, circleA.y - circleB.y) > circleA.r + circleB.r; // dist > sum of radius of circles ?
   },
 };
 
@@ -186,26 +285,3 @@ const SPRITESHEETS = {
     32
   ),
 };
-
-var testObject = new GameObject(
-  0, 100, 200, 200,
-  new Sprite(
-    "goblin",
-    new StateMachine(
-      [
-        new State(
-          0,
-          [
-            new Link(
-              [
-                () => {return false},
-              ],
-              0
-            )
-          ]
-        )
-      ]
-    )
-  ),
-  []
-);
