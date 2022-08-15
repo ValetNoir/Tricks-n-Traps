@@ -34,25 +34,25 @@ function GameSolver(controls) {
     up : new KeyHandler(
       controls.upKey,
       () => {},
-      () => { this.player.move(0, -1 * this.speed); },
+      () => { if(!this.isPaused) this.player.move(0, -1 * this.speed); },
       () => {},
     ),
     left : new KeyHandler(
       controls.leftKey,
       () => {},
-      () => { this.player.move(-1 * this.speed, 0); },
+      () => { if(!this.isPaused) this.player.move(-1 * this.speed, 0); },
       () => {},
     ),
     down : new KeyHandler(
       controls.downKey,
       () => {},
-      () => { this.player.move(0, 1 * this.speed); },
+      () => { if(!this.isPaused) this.player.move(0, 1 * this.speed); },
       () => {},
     ),
     right : new KeyHandler(
       controls.rightKey,
       () => {},
-      () => { this.player.move(1 * this.speed, 0); },
+      () => { if(!this.isPaused) this.player.move(1 * this.speed, 0); },
       () => {},
     ),
     escape : new KeyHandler(
