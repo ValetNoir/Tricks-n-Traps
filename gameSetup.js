@@ -5,7 +5,7 @@ const TICK_FRAMERATE = 1000 / 60;
 const ANIMATION_FRAMERATE = 1000 / 10;
 
 resizeCanvas();
-canvas.style.backgroundColor = "#000000";
+canvas.style.backgroundColor = "#FFFFFF";
 ctx.imageSmoothingEnabled = false;
 document.body.style.overflow = "hidden";
 document.body.style.margin = "0";

@@ -4,29 +4,52 @@ function GameSolver(controls) {
   this.time = 0;
 
   this.speed = 5;
+  this.isRunning = false;
 
   this.player = new GameObject(
     0, 0, 200, 200,
     new Sprite(
-      "goblin",
+      new Spritesheet(
+        "./assets/spritesheets/goblin.png",
+        {
+          idle: new SpriteAnimation([0,1,2,3,4,5,6]),
+          start_run: new SpriteAnimation([7,8]),
+          run: new SpriteAnimation([9,10,11,12,13,14,15]),
+        },
+        32
+      ),
       new StateMachine(
         [
           new State(
-            0,
+            "idle",
             [
               new Link(
                 [
-                  () => {return true},
+                  () => {return this.isRunning},
+                ],
+                1
+              ),
+            ]
+          ),
+          new State(
+            "run",
+            [
+              new Link(
+                [
+                  () => {return !this.isRunning},
                 ],
                 0
-              )
+              ),
             ]
-          )
+          ),
         ]
       )
     ),
     []
   );
+
+  this.vx = 0;
+  this.vy = 0;
   
   this.inventory = [];
   
@@ -34,25 +57,25 @@ function GameSolver(controls) {
     up : new KeyHandler(
       controls.upKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.player.move(0, -1 * this.speed);}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vy += -1 * this.speed;}); },
       () => {},
     ),
     left : new KeyHandler(
       controls.leftKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.player.move(-1 * this.speed, 0);}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vx += -1 * this.speed;}); },
       () => {},
     ),
     down : new KeyHandler(
       controls.downKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.player.move(0, 1 * this.speed);}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vy += 1 * this.speed;}); },
       () => {},
     ),
     right : new KeyHandler(
       controls.rightKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.player.move(1 * this.speed, 0);}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vx += 1 * this.speed;}); },
       () => {},
     ),
     escape : new KeyHandler(
@@ -84,7 +107,14 @@ function GameSolver(controls) {
       this.inputBuffer[0]();
       this.inputBuffer.shift();
     }
-    // game logic here
+    if(this.vx == 0 && this.vy == 0) {
+      this.isRunning = false;
+    } else {
+      this.isRunning = true;
+      this.player.move(this.vx, this.vy);
+      this.vx = 0;
+      this.vy = 0;
+    }
     this.time++;
     requestAnimationFrame(this.draw);
   };
@@ -136,7 +166,7 @@ function GameObject(x, y, w, h, sprite, colliders) {
   }
 
   this.draw = () => {
-    let spritesheet = SPRITESHEETS[this.sprite.spritesheetKey];
+    let spritesheet = this.sprite.spritesheet;
     ctx.drawImage(
       spritesheet.image,
       this.sprite.currentFrame * spritesheet.u,
@@ -151,19 +181,25 @@ function GameObject(x, y, w, h, sprite, colliders) {
   };
 }
 
-function Sprite(spritesheetKey, animationStateMachine) {
-  this.spritesheetKey = spritesheetKey;
+function Sprite(spritesheet, animationStateMachine) {
+  this.spritesheet = spritesheet;
   this.currentFrame;
   this.animationStateMachine = animationStateMachine;
+  this.currentAnimationIndex = this.animationStateMachine.findState();
 
-  this.currentAnimationIndex = () => { // define which animation to play right now
-    return this.animationStateMachine.findState();
+  this.getCurrentAnimationIndex = () => { // define which animation to play right now
+    let newIndex = this.animationStateMachine.findState();
+    if(this.currentAnimationIndex != newIndex) {
+      this.spritesheet.animations[this.currentAnimationIndex].currentFrameIndex = 0;
+    }
+    this.currentAnimationIndex = this.animationStateMachine.findState();
+    return this.currentAnimationIndex;
   };
 
   this.playAnimation = () => {
-    let i = this.currentAnimationIndex();
-    SPRITESHEETS[this.spritesheetKey].animations[i].step();
-    this.currentFrame = SPRITESHEETS[this.spritesheetKey].animations[i].getCurrentFrame();
+    let i = this.getCurrentAnimationIndex();
+    this.spritesheet.animations[i].step();
+    this.currentFrame = this.spritesheet.animations[i].getCurrentFrame();
   };
   
   this.playAnimation();
@@ -179,7 +215,7 @@ function Spritesheet(src, animations, unitWidth) {
 
 function SpriteAnimation(frames) {
   this.frames = frames;
-  this.currentFrameIndex = this.frames[0];
+  this.currentFrameIndex = 0;
 
   this.getCurrentFrame = () => {
     return this.frames[this.currentFrameIndex];
@@ -293,9 +329,11 @@ const Collider = {
 const SPRITESHEETS = {
   goblin : new Spritesheet(
     "./assets/spritesheets/goblin.png",
-    [
-      new SpriteAnimation([0,1,2,3,4,5,6,7]),
-    ],
+    {
+      idle: new SpriteAnimation([0,1,2,3,4,5,6,7]),
+      start_run: new SpriteAnimation([8,9]),
+      run: new SpriteAnimation([10,11,12,13,14,15]),
+    },
     32
   ),
 };
