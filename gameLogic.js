@@ -34,25 +34,25 @@ function GameSolver(controls) {
     up : new KeyHandler(
       controls.upKey,
       () => {},
-      () => { if(!this.isPaused) this.player.move(0, -1 * this.speed); },
+      () => { if(!this.isPaused) this.buff(() => {this.player.move(0, -1 * this.speed);}); },
       () => {},
     ),
     left : new KeyHandler(
       controls.leftKey,
       () => {},
-      () => { if(!this.isPaused) this.player.move(-1 * this.speed, 0); },
+      () => { if(!this.isPaused) this.buff(() => {this.player.move(-1 * this.speed, 0);}); },
       () => {},
     ),
     down : new KeyHandler(
       controls.downKey,
       () => {},
-      () => { if(!this.isPaused) this.player.move(0, 1 * this.speed); },
+      () => { if(!this.isPaused) this.buff(() => {this.player.move(0, 1 * this.speed);}); },
       () => {},
     ),
     right : new KeyHandler(
       controls.rightKey,
       () => {},
-      () => { if(!this.isPaused) this.player.move(1 * this.speed, 0); },
+      () => { if(!this.isPaused) this.buff(() => {this.player.move(1 * this.speed, 0);}); },
       () => {},
     ),
     escape : new KeyHandler(
@@ -65,6 +65,11 @@ function GameSolver(controls) {
     ),
   }
 
+  this.inputBuffer = [];
+  this.buff = (callback) => {
+    this.inputBuffer.push(callback);
+  };
+
   this.changeKeys = (controls) => {
     this.inputHandler.up.setKey(controls.upKey);
     this.inputHandler.left.setKey(controls.leftKey);
@@ -73,11 +78,13 @@ function GameSolver(controls) {
   }
 
   // this.actualLevel
-
   this.loop = () => {
     if(this.isPaused) return;
+    while(this.inputBuffer.length > 0) {
+      this.inputBuffer[0]();
+      this.inputBuffer.shift();
+    }
     // game logic here
-    // this.player.x += 1;
     this.time++;
     requestAnimationFrame(this.draw);
   };
@@ -115,10 +122,17 @@ function GameObject(x, y, w, h, sprite, colliders) {
   this.sprite = sprite;
   this.colliders = colliders;
 
-  this.move = (x, y) => {
+  this.move = (x, y, toCheckCollisions) => {
     //check collisions with level.entities and level.tilemap
-    this.x += x;
-    this.y += y;
+    let finalX = x;
+    let finalY = y;
+
+    for(let i = 0; i < toCheckCollisions; i++) {
+
+    }
+    
+    this.x += finalX;
+    this.y += finalY;
   }
 
   this.draw = () => {
