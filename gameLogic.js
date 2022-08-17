@@ -4,6 +4,8 @@ function GameSolver(controls) {
   this.time = 0;
 
   this.speed = 5;
+
+  // state conditions
   this.isRunning = false;
 
   this.player = new GameObject(
@@ -12,7 +14,7 @@ function GameSolver(controls) {
       new Spritesheet(
         "./assets/spritesheets/goblin.png",
         {
-          idle: new SpriteAnimation([0,1,2,3,4,5,6]),
+          idle: new SpriteAnimation([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6]),
           start_run: new SpriteAnimation([7,8]),
           run: new SpriteAnimation([9,10,11,12,13,14,15]),
         },
@@ -63,7 +65,7 @@ function GameSolver(controls) {
     left : new KeyHandler(
       controls.leftKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.vx += -1 * this.speed;}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vx += -1 * this.speed; this.player.sprite.isLookingLeft = true;}); },
       () => {},
     ),
     down : new KeyHandler(
@@ -75,7 +77,7 @@ function GameSolver(controls) {
     right : new KeyHandler(
       controls.rightKey,
       () => {},
-      () => { if(!this.isPaused) this.buff(() => {this.vx += 1 * this.speed;}); },
+      () => { if(!this.isPaused) this.buff(() => {this.vx += 1 * this.speed; this.player.sprite.isLookingLeft = false;}); },
       () => {},
     ),
     escape : new KeyHandler(
@@ -157,27 +159,16 @@ function GameObject(x, y, w, h, sprite, colliders) {
     let finalX = x;
     let finalY = y;
 
-    for(let i = 0; i < toCheckCollisions; i++) {
+    // for(let i = 0; i < toCheckCollisions; i++) {
 
-    }
+    // }
     
     this.x += finalX;
     this.y += finalY;
   }
 
   this.draw = () => {
-    let spritesheet = this.sprite.spritesheet;
-    ctx.drawImage(
-      spritesheet.image,
-      this.sprite.currentFrame * spritesheet.u,
-      0,
-      spritesheet.u,
-      spritesheet.image.height,
-      this.x,
-      this.y,
-      this.w,
-      this.h,
-    );
+    this.sprite.draw(this.x, this.y, this.w, this.h);
   };
 }
 
@@ -186,6 +177,38 @@ function Sprite(spritesheet, animationStateMachine) {
   this.currentFrame;
   this.animationStateMachine = animationStateMachine;
   this.currentAnimationIndex = this.animationStateMachine.findState();
+  
+  this.isLookingLeft = false;
+
+  this.draw = (x, y, w, h) => {
+    if(this.isLookingLeft) {
+      ctx.scale(-1, 1);
+      ctx.drawImage(
+        this.spritesheet.image,
+        this.currentFrame * spritesheet.u,
+        0,
+        this.spritesheet.u,
+        this.spritesheet.image.height,
+        -(x + w),
+        y,
+        w,
+        h,
+      );
+      ctx.scale(-1, 1);
+    } else {
+      ctx.drawImage(
+        this.spritesheet.image,
+        this.currentFrame * spritesheet.u,
+        0,
+        this.spritesheet.u,
+        this.spritesheet.image.height,
+        x,
+        y,
+        w,
+        h,
+      );
+    }
+  };
 
   this.getCurrentAnimationIndex = () => { // define which animation to play right now
     let newIndex = this.animationStateMachine.findState();
@@ -326,14 +349,14 @@ const Collider = {
   },
 };
 
-const SPRITESHEETS = {
-  goblin : new Spritesheet(
-    "./assets/spritesheets/goblin.png",
-    {
-      idle: new SpriteAnimation([0,1,2,3,4,5,6,7]),
-      start_run: new SpriteAnimation([8,9]),
-      run: new SpriteAnimation([10,11,12,13,14,15]),
-    },
-    32
-  ),
-};
+// const SPRITESHEETS = {
+//   goblin : new Spritesheet(
+//     "./assets/spritesheets/goblin.png",
+//     {
+//       idle: new SpriteAnimation([0,1,2,3,4,5,6,7]),
+//       start_run: new SpriteAnimation([8,9]),
+//       run: new SpriteAnimation([10,11,12,13,14,15]),
+//     },
+//     32
+//   ),
+// };

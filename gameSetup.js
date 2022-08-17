@@ -2,7 +2,7 @@ const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 var W, H;
 const TICK_FRAMERATE = 1000 / 60;
-const ANIMATION_FRAMERATE = 1000 / 10;
+const ANIMATION_FRAMERATE = 1000 / 18;
 
 resizeCanvas();
 canvas.style.backgroundColor = "#FFFFFF";
