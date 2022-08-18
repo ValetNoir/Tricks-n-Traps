@@ -5,6 +5,7 @@ function GameSolver(controls) {
 
   this.speed = 5;
   this.maxSpeed = 10;
+  this.frictioness = this.speed;
 
   // state conditions
   this.isRunning = false;
@@ -112,27 +113,32 @@ function GameSolver(controls) {
       this.inputBuffer.shift();
     }
 
-    if(this.vx < 2 && this.vx > -2 && this.vy < 2 && this.vy > -2) {
+    if(this.vx < this.maxSpeed && this.vx > -this.maxSpeed && this.vy < this.maxSpeed && this.vy > -this.maxSpeed) {
       this.isRunning = false;
     } else {
       this.isRunning = true;
     }
 
     this.vx = Math.min(this.maxSpeed, this.vx);
+    this.vx = Math.max(-this.maxSpeed, this.vx);
     this.vy = Math.min(this.maxSpeed, this.vy);
+    this.vy = Math.max(-this.maxSpeed, this.vy);
+
     this.player.move(this.vx, this.vy);
     if(this.vx > 0) {
-      this.vx -= 0.5;
+      this.vx -= this.frictioness; // friction
     } else if (this.vx < 0) {
-      this.vx += 0.5;
+      this.vx += this.frictioness;
     }
     if(this.vy > 0) {
-      this.vy -= 0.5;
+      this.vy -= this.frictioness;
     } else if (this.vy < 0) {
-      this.vy += 0.5;
+      this.vy += this.frictioness;
     }
 
+    this.vx = Math.min(this.maxSpeed, this.vx);
     this.vx = Math.max(-this.maxSpeed, this.vx);
+    this.vy = Math.min(this.maxSpeed, this.vy);
     this.vy = Math.max(-this.maxSpeed, this.vy);
 
     this.time++;
