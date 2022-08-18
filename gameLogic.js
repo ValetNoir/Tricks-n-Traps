@@ -4,6 +4,7 @@ function GameSolver(controls) {
   this.time = 0;
 
   this.speed = 5;
+  this.maxSpeed = 10;
 
   // state conditions
   this.isRunning = false;
@@ -14,9 +15,9 @@ function GameSolver(controls) {
       new Spritesheet(
         "./assets/spritesheets/goblin.png",
         {
-          idle: new SpriteAnimation([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6]),
-          start_run: new SpriteAnimation([7,8]),
-          run: new SpriteAnimation([9,10,11,12,13,14,15]),
+          idle: new SpriteAnimation([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6], true),
+          start_run: new SpriteAnimation([7,8], false),
+          run: new SpriteAnimation([9,10,11,12,13,14,15], true),
         },
         32
       ),
@@ -105,18 +106,35 @@ function GameSolver(controls) {
   // this.actualLevel
   this.loop = () => {
     if(this.isPaused) return;
+
     while(this.inputBuffer.length > 0) {
       this.inputBuffer[0]();
       this.inputBuffer.shift();
     }
-    if(this.vx == 0 && this.vy == 0) {
+
+    if(this.vx < 2 && this.vx > -2 && this.vy < 2 && this.vy > -2) {
       this.isRunning = false;
     } else {
       this.isRunning = true;
-      this.player.move(this.vx, this.vy);
-      this.vx = 0;
-      this.vy = 0;
     }
+
+    this.vx = Math.min(this.maxSpeed, this.vx);
+    this.vy = Math.min(this.maxSpeed, this.vy);
+    this.player.move(this.vx, this.vy);
+    if(this.vx > 0) {
+      this.vx -= 0.5;
+    } else if (this.vx < 0) {
+      this.vx += 0.5;
+    }
+    if(this.vy > 0) {
+      this.vy -= 0.5;
+    } else if (this.vy < 0) {
+      this.vy += 0.5;
+    }
+
+    this.vx = Math.max(-this.maxSpeed, this.vx);
+    this.vy = Math.max(-this.maxSpeed, this.vy);
+
     this.time++;
     requestAnimationFrame(this.draw);
   };
@@ -132,16 +150,35 @@ function GameSolver(controls) {
   this.stop = () => {clearInterval(this.interval)};
 }
 
+function Level(tilemap, floormap, entities) {
+  // this.title;
+  this.tilemap = tilemap;
+  this.floormap = floormap;
+
+  this.players = {};
+  this.entities = entities;
+  // chest are entities
+
+  this.addPlayer = (player) => {
+    let id = generateId();
+    this.players[id] = player;
+    return id;
+  };
+
+  this.rendermap;
+  this.generateRendermap = () => {};
+
+  this.changeTileAt = (x, y, newMaterial) => {
+    this.tilemap[x][y] = newMaterial;
+  };
+}
+
 function Controls(upKey, leftKey, downKey, rightKey) {
   this.upKey = upKey;
   this.leftKey = leftKey;
   this.downKey = downKey;
   this.rightKey = rightKey;
 }
-
-// function Game(levels) {
-//   this.levels = levels;
-// }
 
 function Item() {
 }
@@ -212,10 +249,10 @@ function Sprite(spritesheet, animationStateMachine) {
 
   this.getCurrentAnimationIndex = () => { // define which animation to play right now
     let newIndex = this.animationStateMachine.findState();
-    if(this.currentAnimationIndex != newIndex) {
-      this.spritesheet.animations[this.currentAnimationIndex].currentFrameIndex = 0;
+    if(this.currentAnimationIndex != newIndex && (this.spritesheet.animations[this.currentAnimationIndex].canCancel || this.spritesheet.animations[this.currentAnimationIndex].currentFrameIndex == 0)) {
+      this.spritesheet.animations[this.currentAnimationIndex].reset();
+      this.currentAnimationIndex = newIndex;
     }
-    this.currentAnimationIndex = this.animationStateMachine.findState();
     return this.currentAnimationIndex;
   };
 
@@ -236,9 +273,16 @@ function Spritesheet(src, animations, unitWidth) {
   this.u = unitWidth;
 }
 
-function SpriteAnimation(frames) {
+function SpriteAnimation(frames, canCancel) {
   this.frames = frames;
   this.currentFrameIndex = 0;
+  this.hasStarted = false;
+  this.canCancel = canCancel;
+
+  this.reset = () => {
+    this.hasStarted = false;
+    this.currentFrameIndex = 0;
+  }
 
   this.getCurrentFrame = () => {
     return this.frames[this.currentFrameIndex];
@@ -246,7 +290,7 @@ function SpriteAnimation(frames) {
 
   this.step = () => {
     this.currentFrameIndex++;
-    if(this.currentFrameIndex >= this.frames.length) {
+    if(this.currentFrameIndex == this.frames.length) {
       this.currentFrameIndex = 0;
     }
   }
@@ -306,18 +350,6 @@ function Circle(x, y, r) {
   this.y = y;
   this.r = r;
 }
-
-
-// Level:
-// - vars:
-//   - title
-//   - tilemap
-//   - rendermap
-//   - entities
-//   - tileentities
-// - functions :
-//   - generate rendermap
-//   - changetileat(x, y)
 
 const Collider = {
   // return bool Box&Box collision
