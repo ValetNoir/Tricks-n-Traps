@@ -387,6 +387,10 @@ const Collider = {
   },
 };
 
+function rInt(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 // const SPRITESHEETS = {
 //   goblin : new Spritesheet(
 //     "./assets/spritesheets/goblin.png",
