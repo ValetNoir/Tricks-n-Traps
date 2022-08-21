@@ -19,6 +19,6 @@ function MouseHandler(button, startCallback, holdCallback, endCallback) {
     clearInterval(this.activeInterval);
   }
 
-  window.addEventListener('mousedown', (e) => { if(e.button == this.button) {e.preventDefault(); this.onHoldStart()}});
+  window.addEventListener('mousedown', (e) => { if(e.button == this.button && !this.isHeld) {e.preventDefault(); this.onHoldStart()}});
   window.addEventListener('mouseup', (e) => { if(e.button == this.button) {e.preventDefault(); this.onHoldEnd()}});
 }
